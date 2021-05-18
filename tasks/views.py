@@ -10,7 +10,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-
+#
 def create_books():
     Book.objects.create(title='Count of Monte Cristo', price=50.00)
     Book.objects.create(title='The Stranger', price=35.00)
@@ -20,7 +20,8 @@ def create_books():
 
 
 @api_view(['GET'])
-def api_root(request, format=None):  # root of our API offers everything the API has to offer for a normal user
+def api_root(request, format=None):  # root of our API offers everything the API has to offer to a normal user
+    # the login page is available in the upper right corner
     return Response({
         'accounts': reverse('accounts-list', request=request, format=format),
         'books': reverse('book-list', request=request, format=format),
@@ -63,9 +64,7 @@ class PurchaseCreate(APIView):
             model_object.books.add(book_object)
         try:
             model_object.save()  # to reflect the changes, we need to save the object
-        except ValueError as exception: # that means that the funds were not enough
-            Purchase.objects.filter(purchase_id=model_object.purchase_id).delete()
-            # above, we delete the transaction we should not have made
+        except ValueError as exception:
             return Response(str(exception), status=status.HTTP_400_BAD_REQUEST)
         # it won't create a new operation again, just change the current operation's balance
         total_price = -1 * model_object.operation.balance_change

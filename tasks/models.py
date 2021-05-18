@@ -14,7 +14,7 @@ class Account(models.Model):
 
     def deposit(self, amount):
         if amount < 0:
-            raise Exception("The deposited amount should not be negative, that's what purchases are for!")
+            raise ValueError("The deposited amount should not be negative, that's what purchases are for!")
         self.balance += amount
         self.save()
 
@@ -61,6 +61,7 @@ class Purchase(models.Model):
         if value is not None:
             value = value * -1
             if self.account.balance + value < 0:
+                self.delete()
                 raise ValueError("Cannot perform such operation, since the funds are insufficient")
             print("UWAGA ****\n\n ", value)
             self.operation, created = Operation.objects.get_or_create(account=self.account, balance_change=value)

@@ -18,5 +18,5 @@ class AccountSerializer(serializers.ModelSerializer):
 class PurchaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Purchase
-        optional_fields = ['account', 'operation']
-        fields = ('purchase_id', 'books', 'account','operation')
+        optional_fields = ['operation']
+        fields = ('purchase_id', 'books', 'operation')
