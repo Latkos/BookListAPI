@@ -15,8 +15,7 @@ class Account(models.Model):
     def deposit(self, amount):
         if amount < 0:
             raise ValueError("The deposited amount should not be negative, that's what purchases are for!")
-        self.balance += amount
-        self.save()
+        return Operation.objects.create(account=self,balance_change=amount)
 
 
 class Operation(models.Model):
