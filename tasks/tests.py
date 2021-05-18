@@ -1,5 +1,6 @@
-# since the tests are generally built to verify business logic, I did not test built-in Django functions,
-# only custom methods were tested
+# DISCLAIMER: since the tests are generally built to verify business logic, I did not test built-in Django functions,
+# only custom methods (or the ones I overloaded) were tested
+
 from decimal import Decimal
 
 import pytest
@@ -36,3 +37,6 @@ def test_account_balance_change_after_operation_creation():
     assert (account1.balance == 100)
     operation = Operation.objects.create(account=account1, balance_change=-30)
     assert (account1.balance == 100 + operation.balance_change)
+
+# @pytest.mark.django_db
+# def test_purchase_creation():

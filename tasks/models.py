@@ -8,7 +8,7 @@ class Account(models.Model):
     Account model holds current balance of every user.
     """
     account_id = models.AutoField(primary_key=True)
-    owner = models.ForeignKey(User, related_name='accounts', on_delete=models.CASCADE)
+    owner = models.OneToOneField(User, related_name='accounts', on_delete=models.CASCADE)
     balance = models.DecimalField(decimal_places=2, max_digits=20)  # arbitrary maximum digits amount
     # the type used for price is DecimalField because it's better for representing currency
 
@@ -32,7 +32,7 @@ class Operation(models.Model):
         super().save(*args, **kwargs)  # call the "real" save() method
         new_balance = self.account.balance + self.balance_change
         if new_balance > 0:
-            self.account.balance += self.balance_change
+            self.account.balance = new_balance
             self.account.save()
 
 
@@ -51,14 +51,18 @@ class Purchase(models.Model):
     """
     purchase_id = models.AutoField(primary_key=True)
     books = models.ManyToManyField(Book)  # again, if we're bound to 4 of those models, there needs to be a many-to-many
-    user = models.ForeignKey(Account, on_delete=models.CASCADE)
-    operation = models.ForeignKey('Operation', on_delete=models.CASCADE)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    operation = models.ForeignKey(Operation, on_delete=models.CASCADE,null=True)
 
     def save(self, *args, **kwargs):
-        self.operation, created = Operation.objects.get_or_create(account=self.user, balance_change=-1)
         super().save(*args, **kwargs)  # call the "real" save() method
         transaction_price = self.books.all().aggregate(Sum('price'))
         value = transaction_price['price__sum']
         if value is not None:
             value = value * -1
-            self.operation.balance_change = value
+            if self.account.balance + value < 0:
+                raise ValueError("Cannot perform such operation, since the funds are insufficient")
+            print("UWAGA ****\n\n ", value)
+            self.operation, created = Operation.objects.get_or_create(account=self.account, balance_change=value)
+            self.operation.save()
+
