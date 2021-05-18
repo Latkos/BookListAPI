@@ -1,6 +1,6 @@
 from django.db import models
 from django.db.models import Sum
-from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.models import User
 
 
 class Account(models.Model):
@@ -8,10 +8,8 @@ class Account(models.Model):
     Account model holds current balance of every user.
     """
     account_id = models.AutoField(primary_key=True)
-    user_name = models.CharField(max_length=100)
-    # could make a one-to-one relationship between User and Account, but we are supposed to use 4 given models, right?
+    owner = models.ForeignKey(User, related_name='accounts', on_delete=models.CASCADE)
     balance = models.DecimalField(decimal_places=2, max_digits=20)  # arbitrary maximum digits amount
-
     # the type used for price is DecimalField because it's better for representing currency
 
     def deposit(self, amount):
