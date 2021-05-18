@@ -3,20 +3,11 @@ from rest_framework.views import APIView
 from tasks.models import Book, Account, Purchase
 from tasks.permissions import IsOwnerOrReadOnly
 from tasks.serializers import BookSerializer, AccountSerializer, PurchaseSerializer
-from rest_framework import generics, mixins, status
-from django.contrib.auth.models import User
+from rest_framework import generics, status
 from rest_framework import permissions
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
-
-#
-def create_books():
-    Book.objects.create(title='Count of Monte Cristo', price=50.00)
-    Book.objects.create(title='The Stranger', price=35.00)
-    Book.objects.create(title='Dialogues', price=25.00)
-    Book.objects.create(title='Les Miserables', price=70.00)
-    Book.objects.create(title='Thinking Fast and Slow', price=60.00)
 
 
 @api_view(['GET'])
@@ -31,7 +22,6 @@ def api_root(request, format=None):  # root of our API offers everything the API
 
 # using ListAPIView from generics for both views because it simplifies view creation immensely
 class BookList(generics.ListAPIView):
-    # create_books()
     queryset = Book.objects.all()
     serializer_class = BookSerializer
 

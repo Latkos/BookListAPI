@@ -1,18 +1,21 @@
 # DISCLAIMER: since the tests are generally built to verify business logic, I did not test functions from
 # Django, Python, REST API etc., since they are presumed to work correctly
-# Thus I only tested custom methods (or the ones I did actually override)
+# Thus I mostly tested self-made methods (or the ones I did actually change a bit)
+# *****************************************************************************************************************
 
 from django.contrib.auth.models import User
 
 import pytest
 from tasks.models import Account, Book, Operation, Purchase
+from rest_framework.test import APIRequestFactory
+from rest_framework.test import APIClient
 
 
 class TestModels:
 
     @pytest.mark.django_db
     # simple setup function in order to not repeat myself, creates 1 Django auth.User, 1 corresponding account and 2 books
-    def set_up(self,account_balance):
+    def set_up(self, account_balance):
         user = User.objects.create_user(
             username='test',
             password='testpass',
@@ -65,3 +68,33 @@ class TestModels:
         account = Account.objects.get(account_id=1)
         with pytest.raises(ValueError):
             account.deposit(-100)
+
+
+class TestViews:
+
+    @pytest.mark.django_db
+    def test_API_root(self):
+        client = APIClient()
+        response = client.get('')
+        amount_of_hyperlinks = 3
+        assert (response.status_code == 200)  # meaning we got to the API
+        assert (len(response.data) == amount_of_hyperlinks)  # there are 3 hyperlinks -accounts, books and books-buy
+        assert (list(response.data.keys()) == (['accounts', 'books', 'books-buy'])) # those are the hyperlink names
+
+    @pytest.mark.django_db
+    def test_books_endpoint_without_any_books(self):
+        client = APIClient()
+        response = client.get('/books/')
+        data = response.data
+        assert (data['count'] == 0)
+        assert (len(data['results']) == 0)
+
+    @pytest.mark.django_db
+    def test_books_endpoint_with_sample_books(self):
+        Book.objects.create(title='book1', price=10.00)
+        Book.objects.create(title='book2', price=30.00)
+        client = APIClient()
+        response = client.get('/books/')
+        data = response.data
+        assert (data['count'] == 2)
+        assert (len(data['results']) == 2)
