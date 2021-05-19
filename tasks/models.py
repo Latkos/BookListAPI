@@ -30,10 +30,16 @@ class Operation(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)  # call the "real" save() method
         new_balance = self.account.balance + self.balance_change
+        print("\nNIUBALANS",new_balance)
         if new_balance > 0:
             self.account.balance = new_balance
             self.account.save()
-
+        # this part should not be reached, because purchase already handles such cases
+        # however implementing some protection in case of manual Operation modification
+        else:
+            self.delete()
+            raise Exception("The operation would leave the balance negative. "
+                            "Operations should not be tampered with manually")
 
 class Book(models.Model):
     """
@@ -63,5 +69,4 @@ class Purchase(models.Model):
                 self.delete()
                 raise ValueError("Cannot perform such operation, since the funds are insufficient")
             self.operation, created = Operation.objects.get_or_create(account=self.account, balance_change=value)
-            self.operation.save()
 
