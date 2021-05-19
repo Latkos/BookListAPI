@@ -1,10 +1,8 @@
-from decimal import Decimal
-
-from django.contrib.auth.models import User
-
 import pytest
-from tasks.models import Account, Book, Operation, Purchase
+from decimal import Decimal
+from django.contrib.auth.models import User
 from rest_framework.test import APIClient
+from tasks.models import Account, Book, Operation, Purchase
 
 
 class TestsViews:
@@ -145,8 +143,6 @@ class TestsViews:
         assert (data[1] == Decimal('40'))
         account = Account.objects.get(owner=user)
         assert (account.balance == 60.00)  # assert the price was deducted from the account
-
-
 
     @pytest.mark.django_db
     def test_books_buy_endpoint_insufficient_funds(self):

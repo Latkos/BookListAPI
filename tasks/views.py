@@ -1,13 +1,13 @@
 from rest_framework.views import APIView
-
-from tasks.models import Book, Account, Purchase
-from tasks.permissions import IsOwnerOrReadOnly
-from tasks.serializers import BookSerializer, AccountSerializer, PurchaseSerializer
 from rest_framework import generics, status
 from rest_framework import permissions
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
+from tasks.models import Book, Account
+from tasks.permissions import IsOwnerOrReadOnly
+from tasks.serializers import BookSerializer, AccountSerializer, PurchaseSerializer
+
 
 
 @api_view(['GET'])
@@ -49,8 +49,8 @@ class PurchaseCreate(APIView):
         model_object = serializer.save()  # save the model object for now
         books = request.data['books']
         for book in books:  # due to many-to-many relationship with books, we need to pass them later
-            id = int(book)
-            book_object = Book.objects.get(book_id=id)
+            book_id = int(book)
+            book_object = Book.objects.get(book_id=book_id)
             model_object.books.add(book_object)
         try:
             model_object.save()  # to reflect the changes, we need to save the object
@@ -62,3 +62,7 @@ class PurchaseCreate(APIView):
         returned_data.append(books)
         returned_data.append(total_price)
         return Response(returned_data, status=status.HTTP_201_CREATED)
+
+    def get(self,request,format=None):
+        message='Please input books in format: {"books": [a,b,...]"}, where a,b,... are the IDs of books to purhcase'
+        return Response("")

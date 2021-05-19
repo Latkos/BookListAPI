@@ -75,7 +75,4 @@ class TestsModels:
         self.set_up(5.00)
         account = Account.objects.get(account_id=1)
         with pytest.raises(Exception):
-            Operation.objects.create(account=account,balance_change=Decimal(-100.00))
-
-
-
+            Operation.objects.create(account=account, balance_change=Decimal(-100.00))
