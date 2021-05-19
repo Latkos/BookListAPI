@@ -46,7 +46,6 @@ class PurchaseCreate(APIView):
         request.data.update({'operation': None})  # the operation is created in the model, so it needn't be passed
         serializer = PurchaseSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)  # if the data is invalid, it'll raise exception on the user's end
-        print("SERIALIZER VALIDATED DATA -----------------\n\n",serializer.validated_data)
         model_object = serializer.save()  # save the model object for now
         books = request.data['books']
         for book in books:  # due to many-to-many relationship with books, we need to pass them later
@@ -59,7 +58,7 @@ class PurchaseCreate(APIView):
             return Response(str(exception), status=status.HTTP_400_BAD_REQUEST)
         # it won't create a new operation again, just change the current operation's balance
         total_price = -1 * model_object.operation.balance_change
-        returned_data=[]
+        returned_data = []
         returned_data.append(books)
         returned_data.append(total_price)
         return Response(returned_data, status=status.HTTP_201_CREATED)

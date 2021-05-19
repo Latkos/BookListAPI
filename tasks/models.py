@@ -10,12 +10,13 @@ class Account(models.Model):
     account_id = models.AutoField(primary_key=True)
     owner = models.OneToOneField(User, related_name='accounts', on_delete=models.CASCADE)
     balance = models.DecimalField(decimal_places=2, max_digits=20)  # arbitrary maximum digits amount
+
     # the type used for price is DecimalField because it's better for representing currency
 
     def deposit(self, amount):
         if amount < 0:
             raise ValueError("The deposited amount should not be negative, that's what purchases are for!")
-        return Operation.objects.create(account=self,balance_change=amount)
+        return Operation.objects.create(account=self, balance_change=amount)
 
 
 class Operation(models.Model):
@@ -30,7 +31,6 @@ class Operation(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)  # call the "real" save() method
         new_balance = self.account.balance + self.balance_change
-        print("\nNIUBALANS",new_balance)
         if new_balance > 0:
             self.account.balance = new_balance
             self.account.save()
@@ -40,6 +40,7 @@ class Operation(models.Model):
             self.delete()
             raise Exception("The operation would leave the balance negative. "
                             "Operations should not be tampered with manually")
+
 
 class Book(models.Model):
     """
@@ -57,16 +58,17 @@ class Purchase(models.Model):
     purchase_id = models.AutoField(primary_key=True)
     books = models.ManyToManyField(Book)  # again, if we're bound to 4 of those models, there needs to be a many-to-many
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
-    operation = models.ForeignKey(Operation, on_delete=models.CASCADE,null=True)
+    operation = models.ForeignKey(Operation, on_delete=models.CASCADE, null=True)
 
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)  # call the "real" save() method
-        transaction_price = self.books.all().aggregate(Sum('price'))
+        super().save(*args, **kwargs)  # first we call the "real" save method in order to be able to run the next line
+        transaction_price = self.books.all().aggregate(Sum('price'))  # self.books exists now, even if it is empty
         value = transaction_price['price__sum']
-        if value is not None:
+        if value is not None:  # first it will be None, since we haven't loaded any books yet
             value = value * -1
             if self.account.balance + value < 0:
                 self.delete()
                 raise ValueError("Cannot perform such operation, since the funds are insufficient")
             self.operation, created = Operation.objects.get_or_create(account=self.account, balance_change=value)
-
+            if created:  # if we create a new operation, we need to save it
+                self.save(update_fields=['operation'])

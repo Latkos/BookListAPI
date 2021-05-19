@@ -144,8 +144,6 @@ class TestsViews:
         assert (data[0] == [1, 2])
         assert (data[1] == Decimal('40'))
         account = Account.objects.get(owner=user)
-        operations=Operation.objects.all()
-        print(operations)
         assert (account.balance == 60.00)  # assert the price was deducted from the account
 
 

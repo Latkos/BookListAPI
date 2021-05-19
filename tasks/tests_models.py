@@ -1,7 +1,9 @@
 # DISCLAIMER: since the tests are generally built to verify business logic, I did not test functions from
 # Django, Python, REST API etc., since they are presumed to work correctly
 # Thus I mostly tested self-made methods (or the ones I did actually change a bit)
+# The code coverage for views.py and models.py as I'm writing this is 100% and 100%
 # *****************************************************************************************************************
+
 from decimal import Decimal
 
 from django.contrib.auth.models import User
