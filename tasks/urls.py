@@ -7,5 +7,5 @@ urlpatterns = format_suffix_patterns([
     path('books/', views.BookList.as_view(), name='book-list'),
     path('accounts/', views.AccountList.as_view(), name='accounts-list'),
     path('login/', include('rest_framework.urls')),
-    path('books/buy', views.PurchaseCreate.as_view(), name='books-buy'),
+    path('books/buy/', views.PurchaseCreate.as_view(), name='books-buy'),
 ])

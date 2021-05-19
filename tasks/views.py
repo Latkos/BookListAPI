@@ -58,5 +58,7 @@ class PurchaseCreate(APIView):
             return Response(str(exception), status=status.HTTP_400_BAD_REQUEST)
         # it won't create a new operation again, just change the current operation's balance
         total_price = -1 * model_object.operation.balance_change
-        books.append(total_price)
-        return Response(books, status=status.HTTP_201_CREATED)
+        returned_data=[]
+        returned_data.append(books)
+        returned_data.append(total_price)
+        return Response(returned_data, status=status.HTTP_201_CREATED)

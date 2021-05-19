@@ -19,4 +19,4 @@ class PurchaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Purchase
         optional_fields = ['operation']
-        fields = ('purchase_id', 'books', 'operation')
+        fields = ('purchase_id', 'books', 'account')

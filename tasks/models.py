@@ -62,7 +62,6 @@ class Purchase(models.Model):
             if self.account.balance + value < 0:
                 self.delete()
                 raise ValueError("Cannot perform such operation, since the funds are insufficient")
-            print("UWAGA ****\n\n ", value)
             self.operation, created = Operation.objects.get_or_create(account=self.account, balance_change=value)
             self.operation.save()
 
