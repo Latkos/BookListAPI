@@ -64,11 +64,10 @@ class Purchase(models.Model):
         super().save(*args, **kwargs)  # first we call the "real" save method in order to be able to run the next line
         transaction_price = self.books.all().aggregate(Sum('price'))  # self.books exists now, even if it is empty
         value = transaction_price['price__sum']
-        if value is not None:  # first it will be None, since we haven't loaded any books yet
+        if value is not None and self.operation is None:  # first it will be None, since we haven't loaded any books yet
             value = value * -1
             if self.account.balance + value < 0:
                 self.delete()
                 raise ValueError("Cannot perform such operation, since the funds are insufficient")
-            self.operation, created = Operation.objects.get_or_create(account=self.account, balance_change=value)
-            if created:  # if we create a new operation, we need to save it
-                self.save(update_fields=['operation'])
+            self.operation = Operation.objects.create(account=self.account, balance_change=value)
+            self.save(update_fields=['operation'])
