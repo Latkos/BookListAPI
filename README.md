@@ -1,3 +1,32 @@
+HOW TO RUN:
+Migrations are ready to save your time. You can just run
+```
+python manage.py migrate
+```
+a
+And then the application can be started with
+```
+python manage.py runserver
+```
+
+The second migration, named "0002_populate_database_sample_values.py" will create 5 sample books, one user and one account.
+
+In order to use the app's functions which are limited to authenticated users (as it was required), you may log in with those credentials:
+
+LOGIN: daft
+
+PASSWORD: daftcode
+
+If you wish to create a new account, you will need to create a new Django user from Django console. Then you can access an extra /accounts/ endpoint to create an account with the balance you pick.
+
+
+The test coverage for "views.py" and "models.py" is both 100% and you may find them in tasks/tests module.
+They were created using Pylint.
+
+
+------------------------------------------------
+TASK:
+
 This application is an online book store, which allows users to buy books with money deposited on their accounts.
 You have given a boilerplate of the project with 4 empty models in module `tasks`. Please use Django REST Framework in your solution. If you write your tests with pytest you’ll get an extra point.
 
