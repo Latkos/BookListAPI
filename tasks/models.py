@@ -1,3 +1,6 @@
+from decimal import Decimal
+
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Sum
 from django.contrib.auth.models import User
@@ -48,7 +51,7 @@ class Book(models.Model):
     """
     book_id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=100)
-    price = models.DecimalField(decimal_places=2, max_digits=10)
+    price = models.DecimalField(decimal_places=2, max_digits=10, validators=[MinValueValidator(Decimal('0.01'))])
 
 
 class Purchase(models.Model):

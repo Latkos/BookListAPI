@@ -9,7 +9,6 @@ from tasks.permissions import IsOwnerOrReadOnly
 from tasks.serializers import BookSerializer, AccountSerializer, PurchaseSerializer
 
 
-
 @api_view(['GET'])
 def api_root(request, format=None):  # root of our API offers everything the API has to offer to a normal user
     # the login page is available in the upper right corner
@@ -57,12 +56,12 @@ class PurchaseCreate(APIView):
         except ValueError as exception:
             return Response(str(exception), status=status.HTTP_400_BAD_REQUEST)
         # it won't create a new operation again, just change the current operation's balance
-        total_price = -1 * model_object.operation.balance_change
+        total_price = -1 * model_object.operation.balance_change # price should be positive, balance change is negative
         returned_data = []
         returned_data.append(books)
         returned_data.append(total_price)
         return Response(returned_data, status=status.HTTP_201_CREATED)
 
-    def get(self,request,format=None):
-        message='Please input books in format: {"books": [a,b,...]"}, where a,b,... are the IDs of books to purhcase'
-        return Response("")
+    def get(self, request, format=None):
+        message = 'Please input books in format: {"books": [a,b,...]"}, where a,b,... are the IDs of books to purhcase'
+        return Response(message,status.HTTP_204_NO_CONTENT)
