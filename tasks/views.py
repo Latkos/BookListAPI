@@ -26,7 +26,7 @@ class BookList(generics.ListAPIView):
 
 
 class AccountList(generics.ListCreateAPIView):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly,
+    permission_classes = [permissions.IsAuthenticated,
                           IsOwnerOrReadOnly]
     queryset = Account.objects.all()
     serializer_class = AccountSerializer
