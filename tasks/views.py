@@ -4,7 +4,7 @@ from rest_framework import permissions
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
-from tasks.models import Book, Account
+from tasks.models import Book, Account, Purchase, Operation
 from tasks.permissions import IsOwnerOrReadOnly
 from tasks.serializers import BookSerializer, AccountSerializer, PurchaseSerializer
 
@@ -41,27 +41,27 @@ class PurchaseCreate(APIView):
     def post(self, request, format=None):
         current_account = Account.objects.filter(owner=request.user).first()
         # we got the account associated with current user
-        request.data.update({'account': current_account.pk})  # passing the account's primary field to data
-        request.data.update({'operation': None})  # the operation is created in the model, so it needn't be passed
-        serializer = PurchaseSerializer(data=request.data)
+        received_data = request.data
+        received_data.update({'account': current_account.pk})  # passing the account's primary field to data
+        received_data.update({'operation': None})  # the operation is created in the model, so it needn't be passed
+        serializer = PurchaseSerializer(data=received_data)
         serializer.is_valid(raise_exception=True)  # if the data is invalid, it'll raise exception on the user's end
-        model_object = serializer.save()  # save the model object for now
-        books = request.data['books']
-        for book in books:  # due to many-to-many relationship with books, we need to pass them later
-            book_id = int(book)
-            book_object = Book.objects.get(book_id=book_id)
-            model_object.books.add(book_object)
-        try:
+        books_id_list = received_data['books']
+        books, transaction_price = Purchase.collect_books_and_return_purchase_cost(books_id_list)
+        if Purchase.is_transaction_possible(current_account.balance, transaction_price):
+            model_object = serializer.save()  # save the model object for now
+            for book in books:
+                model_object.books.add(book)
+            model_object.operation = Operation.objects.create(account=current_account,
+                                                              balance_change=-transaction_price)
             model_object.save()  # to reflect the changes, we need to save the object
-        except ValueError as exception:
-            return Response(str(exception), status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response('Cannot perform such operation, since the funds are insufficient',
+                            status=status.HTTP_400_BAD_REQUEST)
         # it won't create a new operation again, just change the current operation's balance
-        total_price = -1 * model_object.operation.balance_change # price should be positive, balance change is negative
-        returned_data = []
-        returned_data.append(books)
-        returned_data.append(total_price)
+        returned_data = [books_id_list, transaction_price]
         return Response(returned_data, status=status.HTTP_201_CREATED)
 
     def get(self, request, format=None):
         message = 'Please input books in format: {"books": [a,b,...]"}, where a,b,... are the IDs of books to purhcase'
-        return Response(message,status.HTTP_204_NO_CONTENT)
+        return Response(message, status.HTTP_204_NO_CONTENT)

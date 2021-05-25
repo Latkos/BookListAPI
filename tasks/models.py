@@ -4,13 +4,13 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Sum
 from django.contrib.auth.models import User
+from djchoices import ChoiceItem, DjangoChoices
 
 
 class Account(models.Model):
     """
     Account model holds current balance of every user.
     """
-    account_id = models.AutoField(primary_key=True)
     owner = models.OneToOneField(User, related_name='accounts', on_delete=models.CASCADE)
     balance = models.DecimalField(decimal_places=2, max_digits=20)  # arbitrary maximum digits amount
 
@@ -19,7 +19,7 @@ class Account(models.Model):
     def deposit(self, amount):
         if amount < 0:
             raise ValueError("The deposited amount should not be negative, that's what purchases are for!")
-        return Operation.objects.create(account=self, balance_change=amount)
+        return Operation.objects.create(account=self, balance_change=amount, operation_type='deposition')
 
 
 class Operation(models.Model):
@@ -27,9 +27,16 @@ class Operation(models.Model):
     Each change (deposit, purchase, etc..) of Account's balance should be reflected
     in the Operation model for auditing purposes.
     """
-    operation_id = models.AutoField(primary_key=True)
+
+    class OperationTypes(DjangoChoices):
+        deposition = ChoiceItem()
+        deduction = ChoiceItem()
+
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
-    balance_change = models.DecimalField(decimal_places=2, max_digits=20)  # positive for deposit, negative for purchase
+    balance_change = models.DecimalField(decimal_places=2,
+                                         max_digits=20)  # positive for deposit, negative for purchase
+    operation_type = models.CharField(max_length=20, choices=OperationTypes.choices, default='deduction')
+    created = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)  # call the "real" save() method
@@ -49,7 +56,6 @@ class Book(models.Model):
     """
     Model stores a title of the book and its price.
     """
-    book_id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=100)
     price = models.DecimalField(decimal_places=2, max_digits=10, validators=[MinValueValidator(Decimal('0.01'))])
 
@@ -58,19 +64,21 @@ class Purchase(models.Model):
     """
     Model stores data about purchases.
     """
-    purchase_id = models.AutoField(primary_key=True)
     books = models.ManyToManyField(Book)  # again, if we're bound to 4 of those models, there needs to be a many-to-many
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     operation = models.ForeignKey(Operation, on_delete=models.CASCADE, null=True)
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)  # first we call the "real" save method in order to be able to run the next line
-        transaction_price = self.books.all().aggregate(Sum('price'))  # self.books exists now, even if it is empty
-        value = transaction_price['price__sum']
-        if value is not None and self.operation is None:  # first it will be None, since we haven't loaded any books yet
-            value = value * -1
-            if self.account.balance + value < 0:
-                self.delete()
-                raise ValueError("Cannot perform such operation, since the funds are insufficient")
-            self.operation = Operation.objects.create(account=self.account, balance_change=value)
-            self.save(update_fields=['operation'])
+    @classmethod
+    def is_transaction_possible(cls, account_balance, transaction_price):
+        return account_balance - transaction_price >= 0
+
+    @classmethod
+    def collect_books_and_return_purchase_cost(cls, books_id_list):
+        books = []
+        purchase_cost = 0
+        for book in books_id_list:  # due to many-to-many relationship with books, we need to pass them later
+            book_id = int(book)
+            book_object = Book.objects.get(id=book_id)
+            books.append(book_object)
+            purchase_cost += book_object.price
+        return books, purchase_cost
