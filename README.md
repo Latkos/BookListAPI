@@ -1,8 +1,38 @@
-HOW TO RUN:
+## DESCRIPTION
+This application is an online book store, which allows users to buy books with money deposited on their accounts.
+
+Specific instructions I had to follow are described at the end of this README.
+
+------------------------------------------------
+
+## HOW TO RUN:
+
+The API is deployed to Heroku
+
+* You can access the API at https://api-book-list.herokuapp.com/
+![image](https://user-images.githubusercontent.com/48084189/119548470-89d34300-bd96-11eb-9438-44777c2fbce1.png)
+
+* The books list is at: https://api-book-list.herokuapp.com/books/
+![image](https://user-images.githubusercontent.com/48084189/119548611-af604c80-bd96-11eb-83cc-b029319bb60c.png)
+
+* You can buy books at: https://api-book-list.herokuapp.com/books/buy/ (in order to buy e.g. books with ID 1 and 2, type in {"books":[1,2]})
+![image](https://user-images.githubusercontent.com/48084189/119548687-bf782c00-bd96-11eb-8d63-6d056d12d064.png)
+
+Remember, that to buy books you need authentication, sample account created for showcase purposes:
+
+**LOGIN: sample_user**
+
+**PASSWORD: book_pass**
+
+The accounts are tied to Django accounts, so if you try to create another, it won't work. You can change the current balance though, as it is just a showcase simulation.
+
+------------------------------------------------
+
+## HOW TO RUN IN PRODUCTION:
 
 First install the dependencies if you haven't got them already (I did not use any extra packages myself)
 ```
-pipenv install
+pip install -r requirements.txt
 ```
 Migrations are ready to save your time. You can just run
 ```
@@ -17,24 +47,21 @@ The second migration, named "0002_populate_database_sample_values.py" will creat
 
 After migrations, in order to use the app's functions which are limited to authenticated users (as it was required), you may log in with those credentials:
 
-LOGIN: daft
+**LOGIN: sample_user**
 
-PASSWORD: daftcode
+**PASSWORD: book_pass**
 
 If you wish to create a new account, you will need to create a new Django user from Django console. Then you can access an extra "/accounts/" endpoint to create an account with the balance you pick.
-
 
 The test coverage for "views.py" and "models.py" is both 100% and you may find them in tasks/tests module.
 They were created using Pylint.
 
-
 ------------------------------------------------
-TASK:
 
-This application is an online book store, which allows users to buy books with money deposited on their accounts.
-You have given a boilerplate of the project with 4 empty models in module `tasks`. Please use Django REST Framework in your solution. If you write your tests with pytest you’ll get an extra point.
+## TASK:
 
-Your task consists of 3 parts:
+
+The task consists of 3 parts:
 1. Implement necessary fields and connections between models in file `tasks/models.py`.
 2. Implement an API endpoint `/books/` which lists all available books (id, title and price).
 3. Implement an API endpoint `/books/buy/` which accepts an object `{“books”: [ids…]}` and allows user to buy available books using previously deposited funds. Successful response should include array with ids of books and total cost.
@@ -48,4 +75,4 @@ Specific requirements:
 * Include at least basic tests of your code. You may need to write a simple mock of deposit functionality.
 * Cover as many edge cases as you can find.
 * Explain in comments any assumptions and decisions you made.
-* Send us a bundled repository with all commits (https://git-scm.com/docs/git-bundle)
+
