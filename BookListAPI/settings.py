@@ -21,10 +21,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'ng8@vghw$@v9419^9sl7u6)lu!mc%!6t_s3_aw6zo#$k_#3(sp'
+SECRET_KEY = os.getenv('SECRET_KEY', 'Some default value which I suppose will not be used')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['127.0.0.1', 'daft-message-api.herokuapp.com']
 
